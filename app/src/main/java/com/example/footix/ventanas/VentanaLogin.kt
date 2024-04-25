@@ -15,82 +15,68 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.footix.api.UsersService
+import com.example.footix.models.LoginInfo
+import com.example.footix.models.SuccessfulLogin
 import com.example.footix.navegacion.VentanasApp
-import com.example.footix.ui.theme.FootixTheme
+import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
-fun EmailLoginInput(){
-    var email by remember {
-        mutableStateOf("")
+fun VentanaLogin(navController: NavController, userServices: UsersService){
+    LoginScaffold(navController, userServices)
+}
+
+@Composable
+fun LoginScaffold(navController: NavController, usersService: UsersService){
+    val snackbarHostState = remember {
+        SnackbarHostState()
     }
-    Text(text = "Email")
-    Spacer(modifier = Modifier.height(10.dp))
-    TextField(value = email, onValueChange = { email = it})
-}
-
-@Composable
-fun PasswordLoginInput(){
-    var password by remember {
-        mutableStateOf("")
-    }
-    Text(text = "Password")
-    Spacer(modifier = Modifier.height(10.dp))
-    TextField(value = password, onValueChange = { password = it})
-}
-
-
-@Composable
-fun VentanaLogin(navController: NavController){
-    LoginScaffold(navController)
-}
-
-@Composable
-fun LoginScaffold(navController: NavController){
     Scaffold(
+        snackbarHost = {
+            SnackbarHost(snackbarHostState){ data ->
+                Snackbar(
+                    containerColor = MaterialTheme.colorScheme.error,
+                    contentColor = MaterialTheme.colorScheme.onError,
+                    snackbarData = data,
+                )
+            }
+        },
         content = { padding ->
-            LoginContent(padding, navController)
+            LoginContent(padding, navController, usersService, snackbarHostState)
         }
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginTopBar(){
-    TopAppBar(
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                Text(text = "Footix", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleLarge)
-            }
-        },
-    )
-}
-
-@Composable
-fun LoginContent(padding: PaddingValues, navController: NavController){
+fun LoginContent(padding: PaddingValues, navController: NavController, usersService: UsersService, snackbarHostState:SnackbarHostState){
+    val snackbarScope = rememberCoroutineScope()
+    var email by rememberSaveable { mutableStateOf("") }
+    var password by remember {
+        mutableStateOf("")
+    }
     Column (
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -109,12 +95,32 @@ fun LoginContent(padding: PaddingValues, navController: NavController){
             ){
                 Text(text = "Inicia Sesion", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall)
                 Spacer(modifier = Modifier.height(30.dp))
-                EmailLoginInput()
+                Text(text = "Email")
+                Spacer(modifier = Modifier.height(10.dp))
+                TextField(value = email, onValueChange = { email = it}, maxLines = 1)
                 Spacer(modifier = Modifier.height(15.dp))
-                PasswordLoginInput()
+                Text(text = "Password")
+                Spacer(modifier = Modifier.height(10.dp))
+                TextField(value = password, onValueChange = { password = it}, maxLines = 1)
                 Spacer(modifier = Modifier.height(30.dp))
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = { if (email != "" && password != ""){
+                        val loginInfo = LoginInfo(email, password)
+                        usersService.postLogin(loginInfo).enqueue(object : Callback<SuccessfulLogin>{
+                            override fun onResponse(call: Call<SuccessfulLogin>, response: Response<SuccessfulLogin>) {
+                                if (response.isSuccessful){
+                                    navController.navigate(route = VentanasApp.ventanaHome.ruta)
+                                }else{
+                                    snackbarScope.launch {
+                                        snackbarHostState.showSnackbar(message = "Correo o contraseña incorrectos")
+                                    }
+                                }
+                            }
+                            override fun onFailure(call: Call<SuccessfulLogin>, t: Throwable) {
+                                println("error")
+                            }
+                        })
+                    } },
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {

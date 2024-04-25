@@ -43,7 +43,7 @@ fun emailRegistroInput(){
     }
     Text(text = "Email")
     Spacer(modifier = Modifier.height(10.dp))
-    TextField(value = email, onValueChange = { email = it})
+    TextField(value = email, onValueChange = { email = it}, maxLines = 1)
 }
 
 @Composable
@@ -53,7 +53,7 @@ fun passwordRegistroInput(){
     }
     Text(text = "Password")
     Spacer(modifier = Modifier.height(10.dp))
-    TextField(value = password, onValueChange = { password = it})
+    TextField(value = password, onValueChange = { password = it}, maxLines = 1)
 }
 
 @Composable
@@ -63,7 +63,7 @@ fun NombreregistroInput(){
     }
     Text(text = "Nombre")
     Spacer(modifier = Modifier.height(10.dp))
-    TextField(value = nombre, onValueChange = { nombre = it})
+    TextField(value = nombre, onValueChange = { nombre = it}, maxLines = 1)
 }
 @Composable
 fun DescripcionRegistroInput(){
@@ -72,7 +72,7 @@ fun DescripcionRegistroInput(){
     }
     Text(text = "Descripcion")
     Spacer(modifier = Modifier.height(10.dp))
-    TextField(value = descripcion, onValueChange = { descripcion = it})
+    TextField(value = descripcion, onValueChange = { descripcion = it}, maxLines = 1)
 }
 
 
@@ -90,23 +90,6 @@ fun RegistroScaffold(navController: NavController){
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun RegistroTopBar(){
-    TopAppBar(
-        title = {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
-            ) {
-                Text(text = "Footix", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleLarge)
-            }
-        },
-    )
-}
 
 @Composable
 fun RegistroContent(padding: PaddingValues, navController: NavController){
@@ -126,7 +109,7 @@ fun RegistroContent(padding: PaddingValues, navController: NavController){
                     .fillMaxHeight(0.8f)
                     .padding(30.dp)
             ){
-                Text(text = "Regístrate", fontWeight = FontWeight.Bold)
+                Text(text = "Regístrate", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineSmall)
                 Spacer(modifier = Modifier.height(30.dp))
                 emailRegistroInput()
                 passwordRegistroInput()
