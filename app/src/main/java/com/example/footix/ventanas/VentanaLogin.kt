@@ -35,11 +35,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.footix.api.EquiposServices
 import com.example.footix.api.UsersService
+import com.example.footix.controllers.EquiposController
+import com.example.footix.controllers.UserController
+import com.example.footix.models.Equipo
 import com.example.footix.models.LoginInfo
 import com.example.footix.models.SuccessfulLogin
 import com.example.footix.navegacion.VentanasApp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -73,10 +80,8 @@ fun LoginScaffold(navController: NavController, usersService: UsersService){
 @Composable
 fun LoginContent(padding: PaddingValues, navController: NavController, usersService: UsersService, snackbarHostState:SnackbarHostState){
     val snackbarScope = rememberCoroutineScope()
-    var email by rememberSaveable { mutableStateOf("") }
-    var password by remember {
-        mutableStateOf("")
-    }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
     Column (
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -109,7 +114,21 @@ fun LoginContent(padding: PaddingValues, navController: NavController, usersServ
                         usersService.postLogin(loginInfo).enqueue(object : Callback<SuccessfulLogin>{
                             override fun onResponse(call: Call<SuccessfulLogin>, response: Response<SuccessfulLogin>) {
                                 if (response.isSuccessful){
-                                    navController.navigate(route = VentanasApp.ventanaHome.ruta)
+                                    var cookies = response.headers().values("Set-Cookie")
+                                    var token = cookies.get(0).split(";")[0]
+                                    var userController = UserController()
+                                    UserController.token = token
+                                    runBlocking {
+                                        val getUserThread = async(Dispatchers.Default) {
+                                            UserController.user = userController.getUserFromAPI(token)
+                                        }
+                                        val getEquiposThread = async(Dispatchers.Default) {
+                                            EquiposController().getEquiposFromApi(EquiposServices.instance,HashMap<Int, Equipo>())
+                                        }
+                                        getUserThread.await()
+                                        getEquiposThread.await()
+                                    }
+                                    navController.navigate(route = VentanasApp.ventanaCentral.ruta + "/0")
                                 }else{
                                     snackbarScope.launch {
                                         snackbarHostState.showSnackbar(message = "Correo o contraseña incorrectos")
