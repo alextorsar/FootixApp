@@ -183,7 +183,7 @@ fun CustomTopBar(navController: NavController) {
             AsyncImage(
                 model = UserController.user?.fotoPerfil,
                 contentDescription = null,
-                contentScale = ContentScale.FillBounds,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .height(40.dp)
                     .width(40.dp)

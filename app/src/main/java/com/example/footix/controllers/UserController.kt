@@ -4,6 +4,11 @@ import com.example.footix.api.UsersService
 import com.example.footix.models.Estadisticas
 import com.example.footix.models.UpdateFieldsInfo
 import com.example.footix.models.User
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 
 class UserController {
     companion object{
@@ -74,5 +79,22 @@ class UserController {
             print(e)
         }
         return userResult
+    }
+
+    fun updateUserPicture(fotoNueva: File):Boolean {
+        var correcto = false
+        try{
+            val requestBody = fotoNueva.asRequestBody("multipart/form-data".toMediaTypeOrNull())
+            val body = MultipartBody.Part.createFormData("fotoPerfil", fotoNueva.getName(), requestBody)
+            val userResponse = usersService.updateFotoPerfil(token?:"",body).execute()
+            if(userResponse.isSuccessful) {
+                correcto = true
+            }else{
+                correcto = false
+            }
+        }catch (e:Exception){
+            correcto = false
+        }
+        return correcto
     }
 }

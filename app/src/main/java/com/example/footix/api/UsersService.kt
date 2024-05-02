@@ -8,6 +8,7 @@ import com.example.footix.models.UpdateFieldsInfo
 import com.example.footix.models.User
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import retrofit2.Call
 import retrofit2.Retrofit
@@ -16,8 +17,10 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
+import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Part
 
 
 interface UsersService {
@@ -47,4 +50,7 @@ interface UsersService {
     @GET("estadisticas/")
     fun getEstadisticas(@Header("Cookie") token:String): Call<Estadisticas>
 
+    @Multipart
+    @PUT("user/")
+    fun updateFotoPerfil(@Header("Cookie") token:String, @Part fotoNueva: MultipartBody.Part): Call<User>
 }

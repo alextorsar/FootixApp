@@ -1,7 +1,14 @@
 package com.example.footix.ventanas
 
+import android.content.Context
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,13 +46,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.footix.MainActivity
 import com.example.footix.api.UsersService
 import com.example.footix.controllers.EquiposController
 import com.example.footix.controllers.UserController
@@ -56,6 +67,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.io.File
+import java.io.FileOutputStream
 
 @Composable
 fun VentanaProfile(navController: NavController){
@@ -89,6 +102,20 @@ fun ProfileScaffold(navController: NavController, usersService: UsersService){
     )
 }
 
+fun savePublicFileToAppCacheDir(context: Context, fileUri: Uri): File {
+    val appCacheDir = ContextCompat.getExternalCacheDirs(context)
+        .filterNotNull()
+        .first()
+        .also { it.mkdirs() }
+    val file = File(appCacheDir, "temp_file.jpg")
+    context.contentResolver.openInputStream(fileUri)!!.use { input ->
+        FileOutputStream(file).use { output ->
+            output.write(input.readBytes())
+        }
+    }
+    return file
+}
+
 @Composable
 fun ProfileContent(
     padding: PaddingValues,
@@ -96,6 +123,7 @@ fun ProfileContent(
     usersService: UsersService,
     snackbarHostState: SnackbarHostState
 ) {
+    val contexto = LocalContext.current
     val snackbarScope = rememberCoroutineScope()
     var user = UserController.user
     var equipos = EquiposController.Equipos
@@ -110,6 +138,11 @@ fun ProfileContent(
     var descripcion by remember { mutableStateOf(user?.descripcion?:"") }
     var equipoFavorito by remember { mutableIntStateOf(user?.equipoFavorito?:-1) }
     var fotoEquipoUrl by remember { mutableStateOf(urlEscudo) }
+    var selectedImages = remember { ArrayList<Uri>().toMutableStateList() }
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri -> if ( uri != null) if(selectedImages.size > 0) selectedImages[0] = uri else selectedImages.add(uri) else selectedImages.removeAt(0)  }
+    )
     Column (
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -120,13 +153,18 @@ fun ProfileContent(
             .verticalScroll(rememberScrollState()),
         content = {
             AsyncImage(
-                model = user?.fotoPerfil,
+                model = if (selectedImages.isNotEmpty()) selectedImages[0] else user?.fotoPerfil,
                 contentDescription = null,
-                contentScale = ContentScale.FillBounds,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .height(80.dp)
                     .width(80.dp)
                     .clip(CircleShape)
+                    .clickable(onClick={
+                        singlePhotoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    } )
             )
             Text(text = "Foto de perfil")
             Spacer(modifier = Modifier
@@ -186,9 +224,10 @@ fun ProfileContent(
             Spacer(modifier = Modifier.height(10.dp))
             Button(
                 onClick = {
-
+                    var correcto = true
                     val userController = UserController()
-                    if(nombre!=user?.nombre || email!=user.correo || descripcion!=user.descripcion || equipoFavorito!=user.equipoFavorito){
+                    if(nombre!=user?.nombre || email!=user.correo || descripcion!=user.descripcion){
+                        correcto = false
                         val updateFieldsInfo = UpdateFieldsInfo(nombre,email,descripcion,equipoFavorito)
                         var updatedUser: User? = null
                         runBlocking {
@@ -197,15 +236,33 @@ fun ProfileContent(
                             }
                             updateProfileThread.await()
                         }
-                        if (updatedUser != null){
+                        if (updatedUser != null) {
                             UserController.user = updatedUser
-                            navController.navigate(VentanasApp.ventanaProfile.ruta)
-                        }else{
-                            snackbarScope.launch {
-                                snackbarHostState.showSnackbar(message = "No se ha podido actualizar")
-                            }
+                            correcto = true
                         }
                     }
+                    if(correcto && selectedImages.isNotEmpty()){
+                        correcto = false
+                        var fotoNueva = savePublicFileToAppCacheDir(contexto,selectedImages[0])
+                        print(fotoNueva)
+                        runBlocking {
+                            val updateProfilePictureThread = async(Dispatchers.Default) {
+                                correcto = userController.updateUserPicture(fotoNueva)
+                            }
+                            updateProfilePictureThread.await()
+                        }
+                        if(correcto)
+                            UserController.user?.fotoPerfil = selectedImages[0].toString()
+
+                    }
+                    if(correcto){
+                        navController.navigate(VentanasApp.ventanaProfile.ruta)
+                    }else{
+                        snackbarScope.launch {
+                            snackbarHostState.showSnackbar(message = "No se ha podido actualizar")
+                        }
+                    }
+
                 },
                 modifier = Modifier
                 .fillMaxWidth()
@@ -214,4 +271,6 @@ fun ProfileContent(
             }
         }
     )
+
+
 }
