@@ -2,11 +2,11 @@ package com.example.footix.controllers
 
 import com.example.footix.api.UsersService
 import com.example.footix.models.Estadisticas
+import com.example.footix.models.SeguidoInfo
 import com.example.footix.models.UpdateFieldsInfo
 import com.example.footix.models.User
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
-import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
 
@@ -18,12 +18,18 @@ class UserController {
 
     val usersService = UsersService.instance
 
-    fun getUser(): User?{
-        return user
-    }
-
-    fun getToken(): String?{
-        return token
+    fun getAllUsers(users: HashMap<Int, User>){
+        var usersService = UsersService.instance
+        try{
+            var usersResponse = usersService.getUsers().execute()
+            if(usersResponse.isSuccessful){
+                for (user in usersResponse.body()!!){
+                    users.put(user.idBd,user)
+                }
+            }
+        }catch (e:Exception){
+            print(e)
+        }
     }
 
     fun getUserFromAPI(token:String):User?{
@@ -96,5 +102,49 @@ class UserController {
             correcto = false
         }
         return correcto
+    }
+
+    fun getSeguidos(seguidos: ArrayList<Int>, token: String){
+        var usersService = UsersService.instance
+        seguidos.clear()
+        try{
+            var seguidosResponse = usersService.getSeguidos(token).execute()
+            if(seguidosResponse.isSuccessful){
+                for (userId in seguidosResponse.body()!!){
+                    seguidos.add(userId.seguido)
+                }
+            }
+        }catch (e:Exception){
+            print(e)
+        }
+    }
+
+    fun deleteSeguido(idUser:Int, token:String): Boolean{
+        var borrado:Boolean
+        try{
+            val deleteResponse = usersService.deleteSeguido(token,idUser).execute()
+            if (deleteResponse.isSuccessful)
+                borrado=true
+            else
+                borrado=false
+        }catch (e:Exception){
+            borrado= false
+        }
+        return borrado
+    }
+
+    fun postSeguido(idUser:Int, token:String): Boolean{
+        var seguido:Boolean
+        var seguidoInfo = SeguidoInfo(idUser)
+        try{
+            val seguidoResponse = usersService.postSeguido(token,seguidoInfo).execute()
+            if (seguidoResponse.isSuccessful)
+                seguido=true
+            else
+                seguido=false
+        }catch (e:Exception){
+            seguido = false
+        }
+        return seguido
     }
 }

@@ -2,7 +2,6 @@ package com.example.footix.ventanas
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -56,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.footix.MainActivity
 import com.example.footix.api.UsersService
 import com.example.footix.controllers.EquiposController
 import com.example.footix.controllers.UserController
@@ -93,11 +91,15 @@ fun ProfileScaffold(navController: NavController, usersService: UsersService){
                 )
             }
         },
-        topBar = { CustomTopBar(navController) },
+        topBar = { CustomTopBar(navController, true) },
         content = { padding ->
             ProfileContent(padding, navController, usersService, snackbarHostState)
         },
-        bottomBar = { CustomBottomBar(pagerState = pagerState, navController = navController)}
+        bottomBar = { CustomBottomBar(
+            pagerState = pagerState,
+            navController = navController,
+            visible = true
+        )}
 
     )
 }
@@ -226,7 +228,7 @@ fun ProfileContent(
                 onClick = {
                     var correcto = true
                     val userController = UserController()
-                    if(nombre!=user?.nombre || email!=user.correo || descripcion!=user.descripcion){
+                    if(nombre!=user?.nombre || email!=user.correo || descripcion!=user.descripcion || equipoFavorito != user.equipoFavorito){
                         correcto = false
                         val updateFieldsInfo = UpdateFieldsInfo(nombre,email,descripcion,equipoFavorito)
                         var updatedUser: User? = null

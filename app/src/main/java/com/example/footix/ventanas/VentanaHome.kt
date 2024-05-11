@@ -71,103 +71,108 @@ import java.time.ZonedDateTime
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun CustomBottomBar(pagerState: PagerState?, navController: NavController) {
-
-    BottomAppBar(
-        containerColor = MaterialTheme.colorScheme.surface,
-        contentPadding = PaddingValues(0.dp),
-        modifier = Modifier.height(50.dp)
-    ){
-        Row (modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .background(MaterialTheme.colorScheme.surface)
-        ){
-            Box(modifier = Modifier
-                .weight(1f)
-                .wrapContentWidth(Alignment.CenterHorizontally)
-                .align(Alignment.CenterVertically)
-                .clickable(onClick = {
-                    if (pagerState != null) {
-                        val currentPage = pagerState.currentPage
-                        if (currentPage != 0) {
-                            runBlocking {
-                                pagerState.scrollToPage(0)
+fun CustomBottomBar(pagerState: PagerState?, navController: NavController, visible: Boolean) {
+    if(visible) {
+        BottomAppBar(
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier.height(50.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
+                    .background(MaterialTheme.colorScheme.surface)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .wrapContentWidth(Alignment.CenterHorizontally)
+                        .align(Alignment.CenterVertically)
+                        .clickable(onClick = {
+                            if (pagerState != null) {
+                                val currentPage = pagerState.currentPage
+                                if (currentPage != 0) {
+                                    runBlocking {
+                                        pagerState.scrollToPage(0)
+                                    }
+                                }
+                            } else {
+                                navController.navigate(VentanasApp.ventanaCentral.ruta + "/0")
                             }
-                        }
+                        })
+                ) {
+                    var id: Int
+                    if (pagerState != null && pagerState.currentPage == 0) {
+                        id = R.drawable.homepressed
                     } else {
-                        navController.navigate(VentanasApp.ventanaCentral.ruta + "/0")
+                        id = R.drawable.home
                     }
-                })
-            ){
-                var id: Int
-                if(pagerState != null && pagerState.currentPage == 0){
-                    id = R.drawable.homepressed
-                }else{
-                    id = R.drawable.home
+                    Image(
+                        painter = painterResource(id = id),
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp)
+                    )
                 }
-                Image(
-                    painter = painterResource(id = id),
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp)
-                )
-            }
-            Box(modifier = Modifier
-                .weight(1f)
-                .wrapContentWidth(Alignment.CenterHorizontally)
-                .align(Alignment.CenterVertically)
-                .clickable(onClick = {
-                    if (pagerState != null) {
-                        if (pagerState.currentPage != 1) {
-                            runBlocking {
-                                pagerState.scrollToPage(1)
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .wrapContentWidth(Alignment.CenterHorizontally)
+                        .align(Alignment.CenterVertically)
+                        .clickable(onClick = {
+                            if (pagerState != null) {
+                                if (pagerState.currentPage != 1) {
+                                    runBlocking {
+                                        pagerState.scrollToPage(1)
+                                    }
+                                }
+                            } else {
+                                navController.navigate(VentanasApp.ventanaCentral.ruta + "/1")
                             }
-                        }
+                        })
+                ) {
+                    var id: Int
+                    if (pagerState != null && pagerState.currentPage == 1) {
+                        id = R.drawable.socialpressed
                     } else {
-                        navController.navigate(VentanasApp.ventanaCentral.ruta + "/1")
+                        id = R.drawable.social
                     }
-                })
-            ){
-                var id: Int
-                if(pagerState != null && pagerState.currentPage == 1){
-                    id = R.drawable.socialpressed
-                }else{
-                    id = R.drawable.social
+                    Image(
+                        painter = painterResource(id = id),
+                        contentDescription = null,
+                        modifier = Modifier.size(50.dp)
+                    )
                 }
-                Image(
-                    painter = painterResource(id = id),
-                    contentDescription = null,
-                    modifier = Modifier.size(50.dp)
-                )
-            }
-            Box(modifier = Modifier
-                .weight(1f)
-                .wrapContentWidth(Alignment.CenterHorizontally)
-                .align(Alignment.CenterVertically)
-                .clickable(onClick = {
-                    if (pagerState != null) {
-                        if (pagerState.currentPage != 2
-                        ) {
-                            runBlocking {
-                                pagerState.scrollToPage(2)
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .wrapContentWidth(Alignment.CenterHorizontally)
+                        .align(Alignment.CenterVertically)
+                        .clickable(onClick = {
+                            if (pagerState != null) {
+                                if (pagerState.currentPage != 2
+                                ) {
+                                    runBlocking {
+                                        pagerState.scrollToPage(2)
+                                    }
+                                }
+                            } else {
+                                navController.navigate(VentanasApp.ventanaCentral.ruta + "/2")
                             }
-                        }
+                        })
+                ) {
+                    var id: Int
+                    if (pagerState != null && pagerState.currentPage == 2) {
+                        id = R.drawable.estadisticaspressed
                     } else {
-                        navController.navigate(VentanasApp.ventanaCentral.ruta + "/2")
+                        id = R.drawable.estadisticas
                     }
-                })
-            ){
-                var id: Int
-                if(pagerState != null && pagerState.currentPage == 2){
-                    id = R.drawable.estadisticaspressed
-                }else{
-                    id = R.drawable.estadisticas
+                    Image(
+                        painter = painterResource(id = id),
+                        contentDescription = null,
+                        modifier = Modifier.size(40.dp)
+                    )
                 }
-                Image(
-                    painter = painterResource(id = id),
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp)
-                )
             }
         }
     }
@@ -175,31 +180,39 @@ fun CustomBottomBar(pagerState: PagerState?, navController: NavController) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomTopBar(navController: NavController) {
-    CenterAlignedTopAppBar(
-        title = { Text(text = "Footix", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.headlineMedium) },
-        navigationIcon = {
-            Spacer(modifier = Modifier.width(5.dp))
-            AsyncImage(
-                model = UserController.user?.fotoPerfil,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .height(40.dp)
-                    .width(40.dp)
-                    .clip(shape = CircleShape)
-                    .clickable(onClick = {
-                        navController.navigate(VentanasApp.ventanaProfile.ruta)
-                    })
+fun CustomTopBar(navController: NavController, visible: Boolean) {
+    if (visible) {
+        CenterAlignedTopAppBar(
+            title = {
+                Text(
+                    text = "Footix",
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineMedium
+                )
+            },
+            navigationIcon = {
+                Spacer(modifier = Modifier.width(5.dp))
+                AsyncImage(
+                    model = UserController.user?.fotoPerfil,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .height(40.dp)
+                        .width(40.dp)
+                        .clip(shape = CircleShape)
+                        .clickable(onClick = {
+                            navController.navigate(VentanasApp.ventanaProfile.ruta)
+                        })
 
-            )
-        }
-    )
+                )
+            }
+        )
+    }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun HomeContentJornada(padding: PaddingValues, navController: NavController, jornada: Int){
+fun HomeContentJornada(padding: PaddingValues, navController: NavController){
     val equiposController = EquiposController()
     val partidosController = PartidosController()
     var partidos = ArrayList<Partido>()

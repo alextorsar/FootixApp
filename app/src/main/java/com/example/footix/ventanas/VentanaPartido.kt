@@ -20,11 +20,11 @@ fun VentanaPartido(navController: NavController, idPartido: Int?){
     val equipoVisitante = equiposController.getEquipoFromId(partido.equipoVisitante)
     var pagerState: PagerState? = null
     Scaffold(
-        topBar = {CustomTopBar(navController)},
+        topBar = {CustomTopBar(navController, true)},
         content = { padding ->
             PartidoContent(padding, navController)
         },
-        bottomBar = {CustomBottomBar(pagerState, navController) }
+        bottomBar = {CustomBottomBar(pagerState, navController, true) }
     )
 }
 
