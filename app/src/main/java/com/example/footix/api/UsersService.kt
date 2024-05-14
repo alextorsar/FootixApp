@@ -34,7 +34,7 @@ interface UsersService {
         val moshi = Moshi.Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
-        val instance = Retrofit.Builder().baseUrl("https://f375-85-54-210-196.ngrok-free.app/api/")
+        val instance = Retrofit.Builder().baseUrl("https://3aeb-85-54-210-196.ngrok-free.app/api/")
             .addConverterFactory(MoshiConverterFactory.create(moshi))
             .client(OkHttpClient.Builder().build())
             .build().create(UsersService::class.java)

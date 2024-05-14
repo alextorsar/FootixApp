@@ -64,9 +64,10 @@ import com.example.footix.navegacion.VentanasApp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
-
-
+import java.time.format.DateTimeFormatter
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -340,7 +341,8 @@ fun TarjetaPartido(
         }else if(partido.status == 1){
             Text(text = " " + partido.golesLocal + "-" + partido.golesVisitante + " ", Modifier.align(Alignment.CenterVertically),fontSize = 15.sp)
         }else{
-            val fecha = ZonedDateTime.parse(partido.fecha)
+
+            val fecha = ZonedDateTime.parse(partido.fecha).withZoneSameInstant(ZoneId.of("Europe/Madrid"))
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
